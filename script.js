@@ -7,6 +7,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("nav-register").addEventListener("click", showRegistrationForm);
   document.getElementById("nav-overview").addEventListener("click", showOverview);
 
+  function sanitize(input) {
+    if (typeof input !== "string") return input;
+    return input.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+
   function showRegistrationForm() {
     app.innerHTML = `
       <h2>Registrierung</h2>
@@ -132,12 +138,12 @@ document.addEventListener("DOMContentLoaded", () => {
         // Bestätigungsseite anzeigen
         app.innerHTML = `
             <h2>Bestätigung</h2>
-            <p><strong>Kleidungstypen:</strong> ${clothingTypes.join(", ")}</p>
-            <p><strong>Krisengebiet:</strong> ${crisisRegion}</p>
+            <p><strong>Kleidungstypen:</strong> ${clothingTypes.map(sanitize).join(", ")}</p>
+            <p><strong>Krisengebiet:</strong> ${sanitize(crisisRegion)}</p>
             <p><strong>Übergabeart:</strong> ${method === "geschaeftsstelle" ? "Geschäftsstelle" : "Abholung"}</p>
-            ${method === "abholung" ? `<p><strong>Adresse:</strong> ${street}, ${city}, ${postalCode}</p>` : ""}
-            <p><strong>Datum:</strong> ${datum}</p>
-            <p><strong>Uhrzeit:</strong> ${uhrzeit}</p>
+            ${method === "abholung" ? `<p><strong>Adresse:</strong> ${sanitize(street)}, ${sanitize(city)}, ${sanitize(postalCode)}</p>` : ""}
+            <p><strong>Datum:</strong> ${sanitize(datum)}</p>
+            <p><strong>Uhrzeit:</strong> ${sanitize(uhrzeit)}</p>
             <button id="backBtn">Neue Registrierung</button>
         `;
 
@@ -195,12 +201,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderTableRows(data) {
     return data.map(r => `
         <tr>
-        <td>${r.clothingTypes.join(", ")}</td>
-        <td>${r.crisisRegion}</td>
-        <td>${r.method === "geschaeftsstelle" ? "Geschäftsstelle" : "Abholung"}</td>
-        <td>${r.method === "abholung" ? `${r.street}, ${r.city}, ${r.postalCode}` : "-"}</td>
-        <td>${r.datum}</td>
-        <td>${r.uhrzeit}</td>
+            <td>${r.clothingTypes.map(sanitize).join(", ")}</td>
+            <td>${sanitize(r.crisisRegion)}</td>
+            <td>${r.method === "geschaeftsstelle" ? "Geschäftsstelle" : "Abholung"}</td>
+            <td>${r.method === "abholung" ? `${sanitize(r.street)}, ${sanitize(r.city)}, ${sanitize(r.postalCode)}` : "-"}</td>
+            <td>${sanitize(r.datum)}</td>
+            <td>${sanitize(r.uhrzeit)}</td>
         </tr>
     `).join("");
   }
