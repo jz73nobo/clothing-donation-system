@@ -111,6 +111,24 @@ document.addEventListener("DOMContentLoaded", () => {
         const datum = now.toLocaleDateString("de-DE");
         const uhrzeit = now.toLocaleTimeString("de-DE");
 
+        // Registrierung-Objekt
+        const registration = {
+            clothingTypes,
+            crisisRegion,
+            method,
+            street,
+            city,
+            postalCode,
+            datum,
+            uhrzeit
+        };
+
+        // Bestehende Einträge holen und speichern
+        const existing = JSON.parse(localStorage.getItem("registrations") || "[]");
+        existing.push(registration);
+        localStorage.setItem("registrations", JSON.stringify(existing));
+
+
         // Bestätigungsseite anzeigen
         app.innerHTML = `
             <h2>Bestätigung</h2>
@@ -128,9 +146,62 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function showOverview() {
-    app.innerHTML = `
-      <h2>Übersicht</h2>
-      <p>Hier werden später die gespeicherten Registrierungen angezeigt.</p>
+    const data = JSON.parse(localStorage.getItem("registrations") || "[]");
+    let filterOptions = `
+        <label>Krisengebiet filtern:
+        <select id="filterRegion">
+            <option value="">Alle</option>
+            <option value="Afrika">Afrika</option>
+            <option value="Asien">Asien</option>
+            <option value="Europa">Europa</option>
+        </select>
+        </label>
     `;
+
+    let table = `
+        <table border="1" cellpadding="5" cellspacing="0">
+        <thead>
+            <tr>
+            <th>Kleidungstypen</th>
+            <th>Krisengebiet</th>
+            <th>Übergabeart</th>
+            <th>Adresse</th>
+            <th>Datum</th>
+            <th>Uhrzeit</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            ${renderTableRows(data)}
+        </tbody>
+        </table>
+    `;
+
+    app.innerHTML = `
+        <h2>Übersicht</h2>
+        ${filterOptions}
+        ${data.length === 0 ? "<p>Noch keine Registrierungen vorhanden.</p>" : table}
+    `;
+
+    const filterSelect = document.getElementById("filterRegion");
+    if (filterSelect) {
+        filterSelect.addEventListener("change", () => {
+        const selected = filterSelect.value;
+        const filtered = selected ? data.filter(r => r.crisisRegion === selected) : data;
+        document.getElementById("tableBody").innerHTML = renderTableRows(filtered);
+        });
+    }
+    }
+
+    function renderTableRows(data) {
+    return data.map(r => `
+        <tr>
+        <td>${r.clothingTypes.join(", ")}</td>
+        <td>${r.crisisRegion}</td>
+        <td>${r.method === "geschaeftsstelle" ? "Geschäftsstelle" : "Abholung"}</td>
+        <td>${r.method === "abholung" ? `${r.street}, ${r.city}, ${r.postalCode}` : "-"}</td>
+        <td>${r.datum}</td>
+        <td>${r.uhrzeit}</td>
+        </tr>
+    `).join("");
   }
 });
